@@ -2,27 +2,27 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
 const Budget = () => {
-    const { budget, dispatch } = useContext(AppContext);
+    const { budget, expenses, dispatch } = useContext(AppContext);
     const [newBudget, setNewBudget] = useState(budget);
-    const [exceedError, setExceedError] = useState(false); // Estado para manejar el error
+
+    const totalExpenses = expenses.reduce((total, item) => total + item.cost, 0);
 
     const handleBudgetChange = (event) => {
         let value = parseInt(event.target.value);
-
-        if (value < 0) {
-            value = 0;
-        } else if (value > 20000) {
-            setExceedError(true); // Establece el error si el valor excede 20000
-        } else {
-            setExceedError(false); // Restablece el estado del error
-        }
-
         setNewBudget(value);
     };
 
     useEffect(() => {
-        dispatch({ type: 'SET_BUDGET', payload: parseFloat(newBudget) });
-    }, [newBudget, dispatch]);
+        if (newBudget < totalExpenses) {
+            alert("You cannot reduce the budget value lower than the spending.");
+            setNewBudget(budget); // Restaura el valor del presupuesto al valor actual
+        } else if (newBudget > 20000) {
+            alert("Exceeded the limit of £20,000. Please enter a value within the range.");
+            setNewBudget(budget); // Restaura el valor del presupuesto al valor actual
+        } else {
+            dispatch({ type: 'SET_BUDGET', payload: parseFloat(newBudget) });
+        }
+    }, [newBudget, dispatch, budget, totalExpenses]);
 
     return (
         <div className='alert alert-secondary'>
@@ -35,11 +35,6 @@ const Budget = () => {
                 min={0}
                 max={20000}
             />
-            {exceedError && (
-                <p style={{ color: 'red' }}>
-                    Exceeded the limit of £20,000. Please enter a value within the range.
-                </p>
-            )}
         </div>
     );
 };

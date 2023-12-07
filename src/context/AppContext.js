@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useReducer } from 'react';
 
 // 5. The reducer - this is used to update the state, based on the action
 export const AppReducer = (state, action) => {
@@ -64,14 +64,6 @@ export const AppReducer = (state, action) => {
             return {
                 ...state,
             };
-        
-        case 'SET_EXPENSE':
-            action.type = "DONE";
-            return {
-                ...state,
-                expenseTotal: action.payload, // Actualiza el total de gastos en el estado global
-                remaining: state.budget - action.payload 
-            };
         case 'CHG_CURRENCY':
             action.type = "DONE";
             state.currency = action.payload;
@@ -105,28 +97,14 @@ export const AppContext = createContext();
 export const AppProvider = (props) => {
     // 4. Sets up the app state. takes a reducer, and an initial state
     const [state, dispatch] = useReducer(AppReducer, initialState);
-    const [remaining, setRemaining] = useState(0);
-    
-    useEffect(() => {
-        if (state.expenses) {
+    let remaining = 0;
+
+    if (state.expenses) {
             const totalExpenses = state.expenses.reduce((total, item) => {
-                return total + item.cost;
-            }, 0);
-            const remainingBudget = state.budget - totalExpenses;
-            setRemaining(remainingBudget); // Actualiza el estado del remaining
-        }
-    }, [state.budget, state.expenses]);
-
-    useEffect(() => {
-        // Actualiza remaining cada vez que cambian los gastos
-        const totalExpenses = state.expenses.reduce((total, item) => {
-            return total + item.cost;
+            return (total = total + item.cost);
         }, 0);
-        const remainingBudget = state.budget - totalExpenses;
-        setRemaining(remainingBudget);
-    }, [state.expenses, state.budget]);
-
-
+        remaining = state.budget - totalExpenses;
+    }
 
     return (
         <AppContext.Provider
